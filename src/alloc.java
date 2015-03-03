@@ -23,7 +23,7 @@ public class alloc {
 			System.exit(0);
 		}
 		
-		Path inputFile = FileSystems.getDefault().getPath("testdata", filename);
+		Path inputFile = FileSystems.getDefault().getPath(filename);
 		
 		RegisterList regList = new RegisterList();
 		ArrayList<Instruction> inputInstructions= new ArrayList<Instruction>();
