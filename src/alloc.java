@@ -13,17 +13,43 @@ public class alloc {
 	public static void main(String[] args) {
 		
 	//Create the path to the input file
-		String filename = "block4.i"; //args[1];
+		int K = Integer.parseInt(args[0]);
+		String allocator = args[1];
+		String filename = args[2]; 
+		
+		//There aren't enough registers for this
+		if(K < 3){
+			System.err.println( "You have input to few registers. Allocators, must have atlease 3 registers. ");
+			System.exit(0);
+		}
+		
 		Path inputFile = FileSystems.getDefault().getPath("testdata", filename);
 		
-		int K = 10; //input registers
 		RegisterList regList = new RegisterList();
 		ArrayList<Instruction> inputInstructions= new ArrayList<Instruction>();
 		ArrayList<Instruction> outputInstructions= new ArrayList<Instruction>();
+		
 		alloc.parseInstructions(inputFile, inputInstructions, regList); //parse iLOC code
 		
-		TopDownEaC eac = new TopDownEaC(inputInstructions, outputInstructions, regList, K);
-		eac.allocateRegisters();
+		switch(allocator){
+			case "s": //the simple allocator
+				TopDownEaC eac = new TopDownEaC(inputInstructions, outputInstructions, regList, K);
+				eac.allocateRegisters();
+				break;
+		
+			case "t": //the top down with live range
+				TopDownLR lr = new TopDownLR(inputInstructions, outputInstructions, regList, K);
+				lr.allocateRegisters();
+				break;
+		
+			case "b": //the bottom up
+				BottomUp bu = new BottomUp(inputInstructions, outputInstructions, regList, K);
+				bu.allocateRegisters();
+				break;
+		}
+		
+		for(int i=0; i< outputInstructions.size();i++)
+			System.out.println(outputInstructions.get(i));
 		
 		//Input Instruction Test
 		/*for(int i=0; i < inputInstructions.size(); i++)
@@ -31,8 +57,7 @@ public class alloc {
 		
 		System.out.println(regList.printVirtual()); //Registers input into the program
 		*/
-		for(int i=0; i< outputInstructions.size();i++)
-			System.out.println(outputInstructions.get(i));
+
 		
 		
 	}
@@ -66,7 +91,7 @@ public class alloc {
 		        		input[i] = tmp;
 		        	
 		        	if(i > 0 && tmp.startsWith("r")){//If i = 0, we are on the instruction name token
-		        		reglist.addToVirtual(new Register(tmp, Integer.toString(offset), linenumber));
+		        		reglist.addToVirtual(new Register(tmp, Integer.toString(offset), linenumber), linenumber);
 		        		offset-=4;
 		        	}
 		        	i++;

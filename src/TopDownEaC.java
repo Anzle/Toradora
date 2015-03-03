@@ -1,33 +1,37 @@
 import java.util.ArrayList;
 
 
-public class TopDownEaC {
+public class TopDownEaC extends RegisterAllocator{
 
+	/*
 	private ArrayList<Instruction> inputInst;
 	private ArrayList<Instruction> outputInst;
 	private RegisterList regList;
 	public static int  FEASIBLE_SIZE = 3; 
 	private int kreg;
+	*/
 	
 	public TopDownEaC(ArrayList<Instruction> iI,ArrayList<Instruction> oI, RegisterList rL, int Kreg){
 		inputInst = iI;
 		outputInst = oI;
 		regList = rL;
-		
-		kreg =  Kreg - FEASIBLE_SIZE;
+		feasibleSize = 3;
+		realSize =  Kreg - feasibleSize;
 		
 		//Prepare the registers for allocation
-		regList.setFeasRealSize(FEASIBLE_SIZE, Kreg-FEASIBLE_SIZE);
+		regList.setFeasRealSize(feasibleSize, realSize);
 		regList.sortByFrequency();
 		
 		//Fill the real registers with the highest frequency registers
-		for(int i=0; (i < kreg) && (i < regList.getVirtualSize() ); i++){
+		for(int i=0; (i < realSize) && (i < regList.getVirtualSize() ); i++){
 			Register rx = regList.getfromVirtual(i);
 			regList.addToReal(rx, i);
 		}
 		/*
 		 * Any remaining initializations
 		 */
+		String[] str = {"loadI", "1020", " ","r0" };
+		outputInst.add(new Instruction(str, 0));
 		
 	}
 	
@@ -103,7 +107,7 @@ public class TopDownEaC {
 		}//End for i
 	}//End of AllocateRegisters
 	
-	private void loadFromMemory(Register rx){
+/*	private void loadFromMemory(Register rx){
 		//loadI offset => fx
 		//add  r0. fx
 		//load fx => fx
@@ -168,6 +172,6 @@ public class TopDownEaC {
 		notOld = new Instruction(tok, -1);
 		outputInst.add(notOld);
 	}
-	
+	*/
 	
 }//End of Class
