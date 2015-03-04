@@ -47,12 +47,13 @@ public class TopDownEaC extends RegisterAllocator{
 			String[] tok = {" ", " ", " ", " "}; //use for new instruction creation
 			Instruction old = inputInst.get(i), notOld;
 			int linenum = inputInst.get(i).getLineNumber();
+			int j = 1;
 			String regname;
 			Register rx = null;
 			tok[0] = old.getInstToken(0); //Set the command token
 			 
 			//Loop over the two input arguments
-			for(int j = 1; j < 3; j++){
+			for(j = 1; j < 3; j++){
 				regname = old.getInstToken(j);
 				if(regname.startsWith("r")){//then regname is a register
 					rx = regList.getFromVirtual(regname);
@@ -88,9 +89,14 @@ public class TopDownEaC extends RegisterAllocator{
 				rx = regList.getFromVirtual(regname);
 				if(regList.inRealRegister(rx))
 					tok[3] = rx.getRealName();
+				else if(tok[0].equals("store")){
+					regList.addToFeasible(rx, ((j==2)?1:2));
+					loadFromMemory(rx); //Generate load code
+					tok[3] = rx.getRealName();
+				}
 				else{
 					rx.setSpilled(); //if it is already true, this won't really matter
-					regList.addToFeasible(rx, 1); //Use F1 to perform store operation
+					regList.addToFeasible(rx, (j%2+1)); //Use F1 to perform store operation
 					tok[3] = rx.getRealName();
 				}
 			}

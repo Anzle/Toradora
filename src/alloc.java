@@ -13,9 +13,9 @@ public class alloc {
 	public static void main(String[] args) {
 		
 	//Create the path to the input file
-		int K = Integer.parseInt(args[0]);
-		String allocator = args[1];
-		String filename = args[2]; 
+		int K = 4;//Integer.parseInt(args[0]);
+		String allocator = "t"; //args[1];
+		String filename = "loadstore.i"; //args[2]; 
 		
 		//There aren't enough registers for this
 		if(K < 3){
