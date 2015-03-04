@@ -33,9 +33,36 @@ public class TopDownLR extends RegisterAllocator {
 			int linenum = inputInst.get(i).getLineNumber();
 			int k = 1;
 			String regname;
-			Register rx = null;
+			Register rx = null, dying = null;
 			tok[0] = old.getInstToken(0); //Set the command token
 			 
+			regname = old.getInstToken(3); //load the output/result register
+			
+			if(regname.startsWith("r")){//Integerity check, shouldn't actually need
+				rx = regList.getFromVirtual(regname);
+				if(tok[0].equals("store")){
+					if(rx.isSpilled()){
+						regList.addToFeasible(rx, k++);
+						loadFromMemory(rx); //Generate load code
+					}
+					tok[3] = rx.getRealName();
+				}
+				else if(realSize == 0){ //we only have the feasible set
+					rx.setSpilled(); //if it is already true, this won't really matter
+					regList.addToFeasible(rx, k++); //Use F1 to perform store operation
+					tok[3] = rx.getRealName();
+				}
+				else{
+					dying = storeOutput(rx, linenum, k);
+					tok[3] = rx.getRealName();
+				}
+				
+			}
+			
+			
+			
+			
+			
 			//Loop over the two input arguments
 			for(int j = 1; j < 3; j++){
 				regname = old.getInstToken(j);
@@ -44,6 +71,9 @@ public class TopDownLR extends RegisterAllocator {
 					
 					if(regList.inRealRegister(rx) && !rx.isSpilled()){
 						tok[j] = rx.getRealName(); //It's in a register, use it
+					}
+					else if(rx.equals(dying)){ //is this register being taken over by the output?
+						tok[j] = tok[3];
 					}
 					else{
 						if(rx.isSpilled()){//it has already been spilled, so load it
@@ -73,29 +103,6 @@ public class TopDownLR extends RegisterAllocator {
 				}	
 			}//End For j
 			
-			regname = old.getInstToken(3); //load the output/result register
-			
-			if(regname.startsWith("r")){//Integerity check, shouldn't actually need
-				rx = regList.getFromVirtual(regname);
-				if(regList.inRealRegister(rx))
-					tok[3] = rx.getRealName();
-				
-				else if(tok[0].equals("store") && rx.isSpilled()){
-					regList.addToFeasible(rx, ((k==2)?1:2));
-					loadFromMemory(rx); //Generate load code
-					tok[3] = rx.getRealName();
-				}
-				else if(realSize == 0){ //we only have the feasible set
-					rx.setSpilled(); //if it is already true, this won't really matter
-					regList.addToFeasible(rx, (k%2+1)); //Use F1 to perform store operation
-					tok[3] = rx.getRealName();
-				}
-				else{
-					storeOutput(rx, linenum, (k); /////////////
-					tok[3] = rx.getRealName();
-					
-				}
-			}
 			
 			//Add out new instruction to the list
 			notOld = new Instruction(tok, linenum);
@@ -140,25 +147,28 @@ public class TopDownLR extends RegisterAllocator {
 	/* Take a virtual register rx and allocate it to a real register
 	 * Update the real set and generate spill code if needed
 	 * */
-	private void storeOutput(Register rx, int linenumber, int k){
+	private Register storeOutput(Register rx, int linenumber, int k){
+		Register spill = null;
 		for(int i = 0; i < realSize; i++){
 			if(regList.getfromReal(i) == null ){//find an empty spot
 				regList.addToReal(rx, i);
-				return;
+				return spill;
 			}
 		}
 		
 		int realreg = regList.findNextOutput(linenumber);
-		
+		spill = regList.getfromReal(realreg);
 		//check if the register we got isn't dead and needs to be spilled
-		if(regList.getfromReal(realreg).getLastLine() > linenumber){
-			Register spill = regList.getfromReal(realreg); //get the register we will spill
+		 //get the register we will spill
+		if(regList.getfromReal(realreg).getLastLine() > linenumber){	
+			spill = regList.getfromReal(realreg);
+			//System.out.println(linenumber + " Virtual REgister " + spill.getRegName() + " spilled for " + rx.getRegName());
 			spill.setSpilled();
 			storeToMemory(spill, k); //generate spill code. 
-		}
+		}	
 		
 		regList.addToReal(rx, realreg); //add rx into the real set
-		
+		return spill;
 	}
 	
 	protected void storeToMemory(Register rx, int k){
@@ -166,7 +176,7 @@ public class TopDownLR extends RegisterAllocator {
 		//add r0, fy =>fy
 		//store fx => fy
 		Instruction notOld;
-		String ry = Integer.toString(k); //we need two variable to store without storeAI
+		String ry = "r"+Integer.toString(k); //we need two variable to store without storeAI
 		//I trust the assumption that we use r0, r1, r2 for our feasible set
 		
 		String tok[] = new String[4];

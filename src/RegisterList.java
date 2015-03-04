@@ -51,17 +51,19 @@ public class RegisterList {
 	
 	/** Place register rx into the virtual register set if the register is 
 	 * already in the set, increment the frequency and update the last line*/
-	public void addToVirtual(Register rx, int ln){
+	public int addToVirtual(Register rx, int ln){
 		if(virtualRegisters.contains(rx)){
 			int pos = virtualRegisters.indexOf(rx);
 			virtualRegisters.get(pos).incrementFrequency();
 			virtualRegisters.get(pos).setLastLine(rx.getLastLine());
 			virtualRegisters.get(pos).usedAt(ln);
+			return 0;
 		}
 		else{
 			rx.usedAt(ln);
 			virtualRegisters.add(rx);
 			virtualSize++;
+			return 1;
 		}
 	}
 	
@@ -117,7 +119,7 @@ public class RegisterList {
 	public void addToReal(Register rx, int regnum){
 		int pos = virtualRegisters.indexOf(rx);
 		virtualRegisters.get(pos).setRealName("r"+ (regnum+feasibleSize));
-		
+		rx.setRealName("r"+(regnum+feasibleSize));
 		if(realRegisters.size() == realSize){
 			pos = virtualRegisters.indexOf(realRegisters.get(regnum));
 			virtualRegisters.get(pos).setRealName("");

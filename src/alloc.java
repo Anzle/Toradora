@@ -13,9 +13,9 @@ public class alloc {
 	public static void main(String[] args) {
 		
 	//Create the path to the input file
-		int K = 4;//Integer.parseInt(args[0]);
-		String allocator = "t"; //args[1];
-		String filename = "loadstore.i"; //args[2]; 
+		int K = Integer.parseInt(args[0]);
+		String allocator = args[1];
+		String filename = args[2]; 
 		
 		//There aren't enough registers for this
 		if(K < 3){
@@ -30,6 +30,11 @@ public class alloc {
 		ArrayList<Instruction> outputInstructions= new ArrayList<Instruction>();
 		
 		alloc.parseInstructions(inputFile, inputInstructions, regList); //parse iLOC code
+		
+		//If we have 3 feasible and t, it is the same as 3 feasible and s
+		//Since s works properly with 3, switch to method s
+		if(K == 3 && allocator.equals("t"))
+			allocator = "s";
 		
 		switch(allocator){
 			case "s": //the simple allocator
@@ -54,9 +59,9 @@ public class alloc {
 		//Input Instruction Test
 		/*for(int i=0; i < inputInstructions.size(); i++)
 			System.out.println(inputInstructions.get(i));
-		
-		System.out.println(regList.printVirtual()); //Registers input into the program
 		*/
+		//System.out.println(regList.printVirtual()); //Registers input into the program
+		
 
 		
 		
@@ -66,6 +71,7 @@ public class alloc {
 		StringTokenizer tok;
 		String delim = " ,'\t'";
 		int linenumber = 1;
+		int a;
 		int offset = -4;
 		
 		Charset charset = Charset.forName("US-ASCII");
@@ -91,8 +97,8 @@ public class alloc {
 		        		input[i] = tmp;
 		        	
 		        	if(i > 0 && tmp.startsWith("r")){//If i = 0, we are on the instruction name token
-		        		reglist.addToVirtual(new Register(tmp, Integer.toString(offset), linenumber), linenumber);
-		        		offset-=4;
+		        		a = reglist.addToVirtual(new Register(tmp, Integer.toString(offset), linenumber), linenumber);
+		        		offset = (a == 1)? offset-4:offset;
 		        	}
 		        	i++;
 		        }
