@@ -171,40 +171,6 @@ public class TopDownLR extends RegisterAllocator {
 		return spill;
 	}
 	
-	protected void storeToMemory(Register rx, int k){
-		//loadI offset => fy
-		//add r0, fy =>fy
-		//store fx => fy
-		Instruction notOld;
-		String ry = "r"+Integer.toString(k); //we need two variable to store without storeAI
-		//I trust the assumption that we use r0, r1, r2 for our feasible set
-		
-		String tok[] = new String[4];
-		tok[0] = "\nloadI";
-		tok[1] = rx.getOffset();
-		tok[2] = " ";
-		tok[3] = ry; 
-		
-		notOld = new Instruction(tok, -1);
-		outputInst.add(notOld);
-		
-		tok[0] = "add";
-		tok[1] = regList.getfromFeasible(0).getRegName(); //The value r0
-		tok[2] = ry;
-		tok[3] = ry;
-		
-		notOld = new Instruction(tok, -1);
-		outputInst.add(notOld);
-		
-		tok[0] = "store";
-		tok[1] = rx.getRealName();
-		tok[2] = " ";
-		tok[3] = ry + "\n";
-		
-		notOld = new Instruction(tok, -1);
-		outputInst.add(notOld);
-	}
-	
 }//End of Class
 
 

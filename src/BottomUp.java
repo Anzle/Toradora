@@ -32,6 +32,8 @@ public class BottomUp extends RegisterAllocator {
 			Register rx = null;
 			tok[0] = old.getInstToken(0); //Set the command token
 			 
+			
+
 			//Loop over the two input arguments
 			for(int j = 1; j < 3; j++){
 				regname = old.getInstToken(j);
@@ -45,8 +47,19 @@ public class BottomUp extends RegisterAllocator {
 							regList.addToReal(rx, regList.getCurrentRealSize());
 							tok[j] = rx.getRealName(); 
 					}
+					/*else if(rx.equals(dying)){ //is this register being taken over by the output?
+						tok[j] = tok[3];
+					}
+					*/
+					else if(rx.isSpilled()){
+						int spill = regList.findFurthestUse(linenum);
+						regList.addToReal(rx, spill);
+						loadFromMemory(rx, ""); //Generate load code
+						tok[j] = rx.getRealName();
+					}
 					else{
 						int spill = regList.findFurthestUse(linenum);
+						regList.getfromReal(spill).setSpilled();
 						storeToMemory(regList.getfromReal(spill));
 						regList.addToReal(rx, spill);
 						tok[j] = rx.getRealName();
@@ -89,20 +102,23 @@ public class BottomUp extends RegisterAllocator {
 	/* Take a virtual register rx and allocate it to a real register
 	 * Update the real set and generate spill code if needed
 	 * */
-	private void storeOutput(Register rx, int linenumber){
+	private Register storeOutput(Register rx, int linenumber){
+		Register spill = null;
 		if(regList.getCurrentRealSize() < realSize){
 			regList.addToReal(rx, regList.getCurrentRealSize());
-			return;
+			return spill;
 		}
 		int realreg = regList.findFurthestUse(linenumber);
 		//check if the register we got isn't dead and needs to be spilled
 		if(regList.getfromReal(realreg).getLastLine() > linenumber){
-			Register spill = regList.getfromReal(realreg); //get the register we will spill
+			spill = regList.getfromReal(realreg); //get the register we will spill
+			spill.setSpilled();
 			storeToMemory(spill); //generate spill code. 
 		}
 		
 		regList.addToReal(rx, realreg); //add rx into the real set
 		
+		return spill;
 	}
 
 }

@@ -33,7 +33,7 @@ public class alloc {
 		
 		//If we have 3 feasible and t, it is the same as 3 feasible and s
 		//Since s works properly with 3, switch to method s
-		if(K == 3 && allocator.equals("t"))
+		if(K == 3)
 			allocator = "s";
 		
 		switch(allocator){
@@ -60,7 +60,7 @@ public class alloc {
 		/*for(int i=0; i < inputInstructions.size(); i++)
 			System.out.println(inputInstructions.get(i));
 		*/
-		//System.out.println(regList.printVirtual()); //Registers input into the program
+		System.out.println(regList.printVirtual()); //Registers input into the program
 		
 
 		

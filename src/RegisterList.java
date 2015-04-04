@@ -14,9 +14,9 @@ public class RegisterList {
 	/**The bare bones constructor, real and veasible are not set up*/
 	public RegisterList(){
 		virtualRegisters = new ArrayList<Register>(255);
-		Register r0 = new Register(); //use the empty constructor for r0 
-		virtualRegisters.add(r0);
-		virtualSize = 1;
+		//Register r0 = new Register(); //use the empty constructor for r0 
+		//virtualRegisters.add(r0);
+		//virtualSize = 0;
 	}
 	
 	/**The robust constructor. Real and Feasible sets are crafted*/
@@ -29,8 +29,8 @@ public class RegisterList {
 		feasibleSet = new ArrayList<Register>(feasibleSize);
 		
 		Register r0 = new Register(); //use the empty constructor for r0 
-		virtualRegisters.add(r0);
-		virtualSize = 1;
+		//virtualRegisters.add(r0);
+		//virtualSize = 1;
 		feasibleSet.add(r0);
 	}
 	
@@ -216,7 +216,13 @@ public class RegisterList {
 		}
 		
 		for(int i=0; i< realSize; i++){
+			//advance the iterator
+			while(realRegisters.get(i).peakNextUsed() < linenumber){
+				realRegisters.get(i).getNextUsed(); 
+			}
+			
 			if(realRegisters.get(i).peakNextUsed() > ret){
+				//System.out.println(linenumber + " "+ i + " " + realRegisters.get(i).peakNextUsed());
 				ret = realRegisters.get(i).peakNextUsed();
 				j = i;
 			}
